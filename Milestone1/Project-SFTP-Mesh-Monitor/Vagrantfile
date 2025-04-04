@@ -1,0 +1,40 @@
+Vagrant.configure("2") do |config|
+  (1..3).each do |i|
+    config.vm.define "sftp#{i}" do |server|
+      server.vm.box = "ubuntu/focal64"
+      ip_address = "192.168.33.1#{i}"
+      server.vm.network "private_network", ip: ip_address
+      server.vm.hostname = "sftp#{i}"
+      server.vm.provider "virtualbox" do |vb|
+        vb.memory = "512"
+        vb.cpus = 1
+      end
+      server.vm.provision "shell", inline: <<-SHELL
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt-get update
+        sudo apt-get install -y openssh-server rkhunter cron
+        # security audit
+        sudo rkhunter --update
+        sudo rkhunter --propupd
+        sudo rkhunter --check --sk > /vagrant/$(hostname)-check.log
+        # add sftp-user
+        useradd -m -s /bin/bash sftpuser
+        mkdir -p /home/sftpuser/.ssh
+        chmod 700 /home/sftpuser/.ssh
+        # add ssh keys
+        cat /vagrant/my_sftp_key.pub >> /home/sftpuser/.ssh/authorized_keys
+        chmod 600 /home/sftpuser/.ssh/authorized_keys
+        chown -R sftpuser:sftpuser /home/sftpuser/.ssh
+        cp /vagrant/my_sftp_key /home/sftpuser/.ssh/id_rsa
+        chmod 600 /home/sftpuser/.ssh/id_rsa
+        chown sftpuser:sftpuser /home/sftpuser/.ssh/id_rsa
+        # add script
+        cp /vagrant/script.sh /home/sftpuser/script.sh
+        chmod +x /home/sftpuser/script.sh
+        chown sftpuser:sftpuser /home/sftpuser/script.sh
+        # schedule task
+        echo "*/5 * * * * /home/sftpuser/script.sh" | crontab -u sftpuser -
+      SHELL
+    end
+  end
+end
