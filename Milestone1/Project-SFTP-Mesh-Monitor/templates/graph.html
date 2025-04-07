@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+    <title>Logs Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Log Activity Over Time</h1>
+    <canvas id="logChart" width="1000" height="500"></canvas>
+
+    <script>
+        async function fetchData() {
+            const response = await fetch('/graph-data');
+            const data = await response.json();
+
+            const grouped = {};
+
+            data.forEach(entry => {
+                const date = entry.date;
+                const exec = entry.execution_server;
+                if (!grouped[exec]) grouped[exec] = {};
+                grouped[exec][date] = (grouped[exec][date] || 0) + 1;
+            });
+
+            const labels = [...new Set(data.map(d => d.date))].sort();
+            const datasets = Object.entries(grouped).map(([server, values]) => {
+                return {
+                    label: server,
+                    data: labels.map(date => values[date] || 0),
+                    fill: false,
+                    borderColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+                    tension: 0.2
+                }
+            });
+
+            new Chart(document.getElementById('logChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Logs per Execution Server over Time'
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
