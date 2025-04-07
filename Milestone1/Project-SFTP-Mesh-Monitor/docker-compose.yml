@@ -1,0 +1,29 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: my-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  flask-app:
+    build: .
+    container_name: flask-app
+    volumes:
+      - .:/app
+    ports:
+      - "80:8000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://root:example@mongo:27017/
+    command: ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
+#    command: ["ls", "-la", "/app"]
+
+volumes:
+  mongo_data:
