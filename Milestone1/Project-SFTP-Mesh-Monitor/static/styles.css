@@ -14,7 +14,7 @@ body {
     min-height: 100vh;
     z-index: -1;
     object-fit: cover;
-    opacity: 0.5; /* Трохи затемнює, щоб не заважало читанню */
+    opacity: 0.6; /* Трохи затемнює, щоб не заважало читанню */
     pointer-events: none;
 }
 

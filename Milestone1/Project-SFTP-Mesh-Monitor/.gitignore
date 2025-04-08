@@ -8,6 +8,7 @@ __pycache__/
 
 # SSH/SFTP keys
 my_sftp_key.pub
+my_sftp_key
 
 # Vagrant
 .vagrant/
