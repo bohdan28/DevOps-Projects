@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.env
+
+# SSH/SFTP keys
+my_sftp_key.pub
+my_sftp_key
+
+# Vagrant
+.vagrant/
+
+# Logs
+*.log
+
+# MongoDB data
+mongo-data/
+mongo-data/**
+
+# Downloaded logs
+downloaded_logs/
+downloaded_logs/**
+
+# Misc
+*.swp
