@@ -2,6 +2,7 @@ import os
 import re
 import csv
 import io
+import logging
 from flask import Flask, render_template, send_file, jsonify
 from pymongo import MongoClient
 import paramiko
@@ -28,6 +29,19 @@ collection = db[COLLECTION_NAME]
 
 LOG_PATTERN = re.compile(r"(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) successfull connection from (\w+)")
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+def extract_date_from_filename(filename):
+    match = re.search(r"(\d{4}-\d{2}-\d{2})", filename)
+    if match:
+        return match.group(1)
+    return None
+
 
 def process_log_file(filepath, target_server):
     with open(filepath, "r") as f:
@@ -45,8 +59,15 @@ def process_log_file(filepath, target_server):
                     collection.insert_one(doc)
 
 
+def is_date_already_processed(date_str, server_name):
+    return collection.find_one({
+        "date": date_str,
+        "target_server": server_name
+    }) is not None
+
+
 def download_and_process_logs(server_name, server_ip):
-    print(f"Connecting to {server_name} ({server_ip})...")
+    logger.info(f"Connecting to {server_name} ({server_ip})...")
     private_key = paramiko.RSAKey.from_private_key_file(SSH_KEY_PATH)
     transport = paramiko.Transport((server_ip, 22))
     transport.connect(username=USERNAME, pkey=private_key)
@@ -54,9 +75,18 @@ def download_and_process_logs(server_name, server_ip):
 
     for filename in sftp.listdir(REMOTE_DIR):
         if filename.endswith(".log"):
+            log_date = extract_date_from_filename(filename)
+            if not log_date:
+                logger.warning(f"Could not extract date from {filename}, skipping.")
+                continue
+
+            if is_date_already_processed(log_date, server_name):
+                logger.info(f"Skipping {filename} — already processed.")
+                continue
+
             local_path = os.path.join(LOCAL_DIR, f"{server_name}_{filename}")
             remote_path = os.path.join(REMOTE_DIR, filename)
-            print(f"Downloading {remote_path}")
+            logger.info(f"Downloading {remote_path}")
             sftp.get(remote_path, local_path)
             process_log_file(local_path, server_name)
 
@@ -97,7 +127,7 @@ def index():
 @app.route("/collect")
 def collect():
     collect_logs_from_all_servers()
-    return "<p>✅ Logs collected successfully. <a href='/'>Go back</a></p>"
+    return "<p>Logs collected successfully. <a href='/'>Go back</a></p>"
 
 
 @app.route("/download")
@@ -129,4 +159,5 @@ def graph_data():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    collect_logs_from_all_servers()
+    app.run()

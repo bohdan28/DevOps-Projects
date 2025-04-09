@@ -12,11 +12,7 @@ Vagrant.configure("2") do |config|
       server.vm.provision "shell", inline: <<-SHELL
         export DEBIAN_FRONTEND=noninteractive
         sudo apt-get update
-        sudo apt-get install -y openssh-server rkhunter cron
-        # security audit
-        sudo rkhunter --update
-        sudo rkhunter --propupd
-        sudo rkhunter --check --sk > /vagrant/$(hostname)-check.log
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server rkhunter cron
         # add sftp-user
         useradd -m -s /bin/bash sftpuser
         mkdir -p /home/sftpuser/.ssh
@@ -34,6 +30,11 @@ Vagrant.configure("2") do |config|
         chown sftpuser:sftpuser /home/sftpuser/script.sh
         # schedule task
         echo "*/5 * * * * /home/sftpuser/script.sh" | crontab -u sftpuser -
+        # security audit
+        touch /etc/default/rkhunter.conf
+        sudo rkhunter --update
+        sudo rkhunter --propupd
+        sudo rkhunter --check --sk > /vagrant/$(hostname)-check.log || true
       SHELL
     end
   end
