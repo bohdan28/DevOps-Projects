@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    container_name: sftp-mesh-monitor
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    environment:
+      - SERVERS={"sftp1":"192.168.33.11","sftp2":"192.168.33.12","sftp3":"192.168.33.13"}
+      - SSH_KEY_PATH=my_sftp_key
+      - USERNAME=sftpuser
+      - REMOTE_DIR=/home/sftpuser/
+      - LOCAL_DIR=/app/downloaded_logs
+      - MONGO_URI=mongodb://root:example@mongo:27017
+      - DB_NAME=logdb
+      - COLLECTION_NAME=logs
+    restart: always
+
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
