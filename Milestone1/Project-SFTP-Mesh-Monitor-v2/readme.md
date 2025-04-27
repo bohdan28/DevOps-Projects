@@ -90,22 +90,20 @@ docker-compose up --build -d
 ```
 This starts:
 
-- "Go app on port 8080"
+- "Go app on port 80"
 
 - "MongoDB database"
 
 ### 🌐 6. Open the web browser
-Visit: [localhost_page](http://localhost:8080)
+Visit: [localhost_page](http://localhost:80)
 
 line-------------------------------------------------------------------
 
 ## 📂 Project Structure
 ```graphql
 .
-├── app.py                   # Main Flask app
-├── templates/               # HTML templates
-├── static/
-│   ├── styles.css           # UI styling
+├── app.go                   # Main Go application
+├── templates/               # HTML templates with UI styling
 ├── Dockerfile               # App image
 ├── docker-compose.yml       # Compose definition
 ├── Vagrantfile              # Defines local SFTP mesh
