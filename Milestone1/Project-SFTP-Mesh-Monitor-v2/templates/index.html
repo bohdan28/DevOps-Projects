@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+    <title>SFTP Mesh Monitor</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #bg-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100vw;
+            min-height: 100vh;
+            z-index: -1;
+            object-fit: cover;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        button {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            padding: 6px 6px;
+        }
+
+        #table-area {
+            max-width: 1080px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        #filters {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #filters label {
+            font-weight: bold;
+        }
+
+        canvas {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <video autoplay muted loop id="bg-video">
+        <source src="https://assets.mixkit.co/videos/50192/50192-720.mp4" type="video/mp4">
+    </video>
+    <h1>SFTP Mesh Monitor</h1>
+
+    <div>
+        <button onclick="sortTable(0)">Sort by Date</button>
+        <button onclick="sortTable(3)">Sort by Target Server</button>
+        <button onclick="sortTable(2)">Sort by Execution Server</button>
+        <button onclick="window.location.href='/collect'">Update Logs</button>
+        <button onclick="window.location.href='/graph'">Graph</button>
+        <a href="/download" download><button>Download CSV</button></a>
+    </div>
+
+    <div id="table-area">
+        <div id="filters">
+            <label>Date:
+                <select id="filter-date"><option value="">All</option></select>
+            </label>
+            <label>Execution Server:
+                <select id="filter-execution"><option value="">All</option></select>
+            </label>
+            <label>Target Server:
+                <select id="filter-target"><option value="">All</option></select>
+            </label>
+        </div>
+
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Execution Server</th>
+                    <th>Target Server</th>
+                </tr>
+            </thead>
+            <tbody>
+            {{range .}}
+                <tr>
+                    <td>{{.Date}}</td>
+                    <td>{{.Time}}</td>
+                    <td>{{.ExecutionServer}}</td>
+                    <td>{{.TargetServer}}</td>
+                </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function sortTable(colIndex) {
+            const table = document.querySelector("table");
+            const rows = Array.from(table.rows).slice(1);
+            const sorted = rows.sort((a, b) => {
+                const A = a.cells[colIndex].textContent.trim();
+                const B = b.cells[colIndex].textContent.trim();
+                return A.localeCompare(B, undefined, { numeric: true });
+            });
+            const tbody = table.tBodies[0];
+            sorted.forEach(row => tbody.appendChild(row));
+        }
+    </script>
+    <script>
+        const table = document.querySelector("table");
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+        const dateFilter = document.getElementById("filter-date");
+        const execFilter = document.getElementById("filter-execution");
+        const targetFilter = document.getElementById("filter-target");
+
+        function updateFilters() {
+            const getUnique = (index) => [...new Set(rows.map(row => row.cells[index].textContent.trim()))];
+            const fillOptions = (select, values) => {
+                values.sort();
+                values.forEach(v => {
+                    const opt = document.createElement("option");
+                    opt.value = v;
+                    opt.textContent = v;
+                    select.appendChild(opt);
+                });
+            };
+
+            fillOptions(dateFilter, getUnique(0));
+            fillOptions(execFilter, getUnique(2));
+            fillOptions(targetFilter, getUnique(3));
+        }
+
+        function applyFilters() {
+            const dateVal = dateFilter.value;
+            const execVal = execFilter.value;
+            const targetVal = targetFilter.value;
+
+            rows.forEach(row => {
+                const date = row.cells[0].textContent.trim();
+                const exec = row.cells[2].textContent.trim();
+                const target = row.cells[3].textContent.trim();
+
+                const match = (!dateVal || date === dateVal) &&
+                              (!execVal || exec === execVal) &&
+                              (!targetVal || target === targetVal);
+                row.style.display = match ? "" : "none";
+            });
+        }
+
+        dateFilter.addEventListener("change", applyFilters);
+        execFilter.addEventListener("change", applyFilters);
+        targetFilter.addEventListener("change", applyFilters);
+
+        updateFilters();
+    </script>
+</body>
+</html>
