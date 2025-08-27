@@ -1,18 +1,18 @@
-# 📡 SFTP Mesh Monitor
+# SFTP Mesh Monitor
 
 **SFTP Mesh Monitor** is a Go-based dashboard for collecting, storing, visualizing, and analyzing logs from multiple SFTP servers in a unified web interface.
 
 The project uses:
-- 🐹 Go (with concurrency via goroutines for x500 speed improvement)
-- 🐋 Docker + Docker Compose
-- 🧰 Vagrant (for local server simulation)
-- 🧮 MongoDB (log storage)
-- 📊 Graphs and filters via HTML/CSS + JavaScript
-- 🎥 Video background UI
+- Go (with concurrency via goroutines for x500 speed improvement)
+- Docker + Docker Compose
+- Vagrant (for local server simulation)
+- MongoDB (log storage)
+- Graphs and filters via HTML/CSS + JavaScript
+- Video background UI
 
 ---
 
-## 🚀 Features
+## Features
 
 - Collect logs from remote SFTP servers over SSH/SFTP
 - Parse and store logs into MongoDB
@@ -29,7 +29,7 @@ The project uses:
 
 ---
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 Ensure you have installed:
 
@@ -40,16 +40,16 @@ Ensure you have installed:
 
 ---
 
-## 🧭 Runbook (Step-by-Step)
+## Runbook (Step-by-Step)
 
-### 🔁 1. Clone the repository
+### 1. Clone the repository
 
 ```bash
 git clone git@github.com:bohdan28/DevOps-Projects.git
 
 cd DevOps-Projects/Milestone1/Project-SFTP-Mesh-Monitor-v2
 ```
-### 🔑 2. Create SSH key for SFTP access
+### 2. Create SSH key for SFTP access
 ```bash
 ssh-keygen -t rsa -b 4096 -f my_sftp_key
 ```
@@ -59,7 +59,7 @@ This generates:
 
 - my_sftp_key.pub (public) — to be injected into Vagrant servers
 
-### 📦 3. Start SFTP servers via Vagrant
+### 3. Start SFTP servers via Vagrant
 ```bash
 vagrant up
 ```
@@ -67,7 +67,7 @@ This will provision 3 SFTP servers (e.g. sftp1, sftp2, sftp3) with shared log di
 
 Reports of security audit are saved in project folder to ensure VMs are robust.
 
-### ⚙️ 4. Configure Environment Variables
+### 4. Configure Environment Variables
 
 You may customize the following settings in `docker-compose.yml`:
 
@@ -84,7 +84,7 @@ You may customize the following settings in `docker-compose.yml`:
 
 Make sure to update these values as needed before proceeding.
 
-### 🐳 5. Launch the application stack
+### 5. Launch the application stack
 ```bash
 docker-compose up --build -d
 ```
@@ -94,12 +94,12 @@ This starts:
 
 - "MongoDB database"
 
-### 🌐 6. Open the web browser
+### 6. Open the web browser
 Visit: [localhost_page](http://localhost:80)
 
 line-------------------------------------------------------------------
 
-## 📂 Project Structure
+## Project Structure
 ```graphql
 .
 ├── app.go                   # Main Go application
